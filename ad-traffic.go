@@ -16,21 +16,18 @@ import (
 
 func main() {
 
-	//if len(os.Args) < 4 {
-	//	fmt.Fprintf(os.Stderr, "Usage: %s <broker> <group> <topics..>\n",
-	//		os.Args[0])
-	//	os.Exit(1)
-	//}
+	if len(os.Args) < 4 {
+		fmt.Fprintf(os.Stderr, "Usage: %s <broker> <group> <topics..>\n",
+			os.Args[0])
+		os.Exit(1)
+	}
 
-	//broker := os.Args[1]
-	//group := os.Args[2]
-	//topics := os.Args[3:]
-
-	//readPackets(broker, group, topics)
+	broker := os.Args[1]
+	group := os.Args[2]
+	topics := os.Args[3:]
 
 	advertisers := readIpList("blacklist.txt")
-
-	fmt.Println(len(advertisers))
+	readPackets(broker, group, topics, advertisers)
 
 }
 
