@@ -26,8 +26,8 @@ func main() {
 	group := os.Args[2]
 	topics := os.Args[3:]
 
-	advertisers := readIpList("blacklist.txt")
-	readPackets(broker, group, topics, advertisers)
+	advertisersIps := readIpList("ip-blacklist.txt")
+	readPackets(broker, group, topics, advertisersIps)
 
 }
 
@@ -82,7 +82,7 @@ func readPackets(broker string, group string, topics []string, ip4Set map[[4]byt
 	}
 
 	fmt.Printf("Closing consumer.\n")
-	fmt.Println("Got %d bytes to and from the blacklist.", bytes)
+	fmt.Printf("Got %d bytes to and from the blacklist.\n", bytes)
 	c.Close()
 }
 
@@ -95,15 +95,12 @@ func processMessage(msg kafka.Message, ip4Set map[[4]byte]bool) int {
 	var eth layers.Ethernet
 	var ip4 layers.IPv4
 	var ip6 layers.IPv6
+	var dns layers.DNS
 
 	parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &eth, &ip4, &ip6)
 	decoded := []gopacket.LayerType{}
 
-	err := parser.DecodeLayers(msg.Value, &decoded)
-
-	if err != nil {
-		log.Fatal(err)
-	}
+	parser.DecodeLayers(msg.Value, &decoded)
 
 	for _, layerType := range decoded {
 		switch layerType {
@@ -113,6 +110,11 @@ func processMessage(msg kafka.Message, ip4Set map[[4]byte]bool) int {
 			if checkIp4(ip4, ip4Set) {
 				// In the list: count the bytes
 				return len(msg.Value)
+			}
+		case layers.LayerTypeDNS:
+			q := dns.Questions[0]
+			if q.Type == layers.DNSTypeA {
+				log.Printf("DNS Request: %+v", dns)
 			}
 		}
 	}
@@ -172,6 +174,6 @@ func readIpList(path string) map[[4]byte]bool {
 
 func toIpBytes(str string) [4]byte {
 	var array [4]byte
-	copy(array[:4], net.ParseIP(str).To4()[0:4])
+	copy(array[:], net.ParseIP(str).To4()[0:4])
 	return array
 }
