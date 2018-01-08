@@ -105,17 +105,17 @@ func processMessage(msg kafka.Message, ip4Set map[[4]byte]bool) int {
 
 	for _, layerType := range decoded {
 		switch layerType {
+		case layers.LayerTypeDNS:
+			if dns.OpCode == 0 {
+				q := dns.Questions[0]
+				log.Printf("DNS Request for %+v at %+v: %+v", ip4.SrcIP.To4(), msg.Timestamp, string(q.Name))
+			}
 		case layers.LayerTypeIPv6:
 			// Do nothing: current list to check against only contains IPV4 addresses.
 		case layers.LayerTypeIPv4:
 			if checkIp4(ip4, ip4Set) {
 				// In the list: count the bytes
 				return len(msg.Value)
-			}
-		case layers.LayerTypeDNS:
-			if dns.OpCode == 0 {
-				q := dns.Questions[0]
-				log.Printf("DNS Request from %+v at %+v: %+v", ip4.SrcIP.To4(), msg.Timestamp, string(q.Name))
 			}
 		}
 	}
