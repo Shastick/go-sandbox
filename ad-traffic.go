@@ -96,9 +96,9 @@ func processMessage(msg kafka.Message, ip4Set map[[4]byte]bool) int {
 	var ip4 layers.IPv4
 	var ip6 layers.IPv6
 	var udp layers.UDP
-	var dns layers.DNS
+	var dnsreq layers.DNSQuestion
 
-	parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &eth, &ip4, &ip6, &udp, &dns)
+	parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &eth, &ip4, &ip6, &udp, &dnsreq)
 	decoded := []gopacket.LayerType{}
 
 	parser.DecodeLayers(msg.Value, &decoded)
@@ -113,10 +113,7 @@ func processMessage(msg kafka.Message, ip4Set map[[4]byte]bool) int {
 				return len(msg.Value)
 			}
 		case layers.LayerTypeDNS:
-			q := dns.Questions[0]
-			if q.Type == layers.DNSTypeA {
-				log.Printf("DNS Request from %+v at %+v: %+v", ip4.SrcIP.To4(), msg.Timestamp, string(q.Name))
-			}
+			log.Printf("DNS Request from %+v at %+v: %+v", ip4.SrcIP.To4(), msg.Timestamp, string(dnsreq.Name))
 		}
 	}
 
@@ -169,7 +166,7 @@ func readIpList(path string) map[[4]byte]bool {
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
-	
+
 	return blacklist
 }
 
