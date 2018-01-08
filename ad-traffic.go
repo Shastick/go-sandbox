@@ -103,6 +103,8 @@ func processMessage(msg kafka.Message, ip4Set map[[4]byte]bool) int {
 
 	parser.DecodeLayers(msg.Value, &decoded)
 
+	var blacklistBytes = 0
+
 	for _, layerType := range decoded {
 		switch layerType {
 		case layers.LayerTypeDNS:
@@ -116,12 +118,12 @@ func processMessage(msg kafka.Message, ip4Set map[[4]byte]bool) int {
 		case layers.LayerTypeIPv4:
 			if checkIp4(ip4, ip4Set) {
 				// In the list: count the bytes
-				return len(msg.Value)
+				blacklistBytes = len(msg.Value)
 			}
 		}
 	}
 
-	return 0
+	return blacklistBytes
 }
 
 // Golang has no native sets... use a map of 4 bytes to bool instead
