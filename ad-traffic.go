@@ -115,7 +115,7 @@ func processMessage(msg kafka.Message, ip4Set map[[4]byte]bool) int {
 		case layers.LayerTypeDNS:
 			q := dns.Questions[0]
 			if q.Type == layers.DNSTypeA {
-				log.Printf("DNS Request at %+v: %+v", msg.Timestamp, string(q.Name))
+				log.Printf("DNS Request from %+v at %+v: %+v", ip4.SrcIP.To4(), msg.Timestamp, string(q.Name))
 			}
 		}
 	}
@@ -169,7 +169,7 @@ func readIpList(path string) map[[4]byte]bool {
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
-
+	
 	return blacklist
 }
 
