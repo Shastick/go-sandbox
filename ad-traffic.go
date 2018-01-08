@@ -96,9 +96,10 @@ func processMessage(msg kafka.Message, ip4Set map[[4]byte]bool) int {
 	var ip4 layers.IPv4
 	var ip6 layers.IPv6
 	var udp layers.UDP
+	var tcp layers.TCP
 	var dns layers.DNS
 
-	parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &eth, &ip4, &ip6, &udp, &dns)
+	parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &eth, &ip4, &ip6, &udp, &tcp, &dns)
 	decoded := []gopacket.LayerType{}
 
 	parser.DecodeLayers(msg.Value, &decoded)
