@@ -109,13 +109,7 @@ func processMessage(msg kafka.Message, ip4Set map[[4]byte]bool) int {
 		switch layerType {
 		case layers.LayerTypeDNS:
 			// Check if we are looking at a question (quick hack):
-			if len(dns.Answers) == 0 {
-				q := dns.Questions[0]
-				log.Printf("DNS Request from %+v at %+v: %+v \n", ip4.SrcIP.To4(), msg.Timestamp, string(q.Name))
-			} else {
-				r := dns.Answers[0]
-				log.Printf("DNS reply from %+v at %+v: %+v \n", ip4.SrcIP.To4(), msg.Timestamp, string(r.Name))
-			}
+			log.Printf("Got DNS packet: %+v\n", dns)
 		case layers.LayerTypeIPv6:
 			// Do nothing: current list to check against only contains IPV4 addresses.
 		case layers.LayerTypeIPv4:
